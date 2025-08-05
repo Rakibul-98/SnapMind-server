@@ -2,7 +2,7 @@ import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { userServices } from "./user.service";
 
-export const getProfile = catchAsync(async (req, res) => {
+const getProfile = catchAsync(async (req, res) => {
   const { email } = req.params;
   const result = await userServices.getUserProfileByEmail(email);
 
@@ -14,7 +14,7 @@ export const getProfile = catchAsync(async (req, res) => {
   });
 });
 
-export const updateProfile = catchAsync(async (req, res) => {
+const updateProfile = catchAsync(async (req, res) => {
   const { email } = req.params;
   const result = await userServices.updateUserProfileByEmail(email, req.body);
 
@@ -26,7 +26,7 @@ export const updateProfile = catchAsync(async (req, res) => {
   });
 });
 
-export const getAllUsers = catchAsync(async (req, res) => {
+const getAllUsers = catchAsync(async (req, res) => {
   const result = await userServices.getAllUsers();
 
   sendResponse(res, {
@@ -36,3 +36,9 @@ export const getAllUsers = catchAsync(async (req, res) => {
     data: result,
   });
 });
+
+export const userControllers = {
+  getAllUsers,
+  updateProfile,
+  getProfile,
+};
