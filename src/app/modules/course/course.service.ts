@@ -1,27 +1,53 @@
 import { AppError } from "../../errors/AppError";
 import { ICourse } from "./course.interface";
 import { Course } from "./course.model";
+import { AiService } from "../ai/ai.service";
 
-const generateOutline = async (title: string): Promise<string[]> => {
-  return [
-    `${title} - Topic 1`,
-    `${title} - Topic 2`,
-    `${title} - Topic 3`,
-    `${title} - Topic 4`,
-  ].slice(0, 10);
+interface FlattenedOutline {
+  topics: string[];
+}
+
+const flattenOutline = (aiOutline: any): FlattenedOutline => {
+  const topics: string[] = [];
+
+  if (!aiOutline?.modules || !Array.isArray(aiOutline.modules)) {
+    return { topics };
+  }
+
+  aiOutline.modules.forEach((mod: any) => {
+    if (mod.title) topics.push(mod.title);
+    if (Array.isArray(mod.lessons)) {
+      mod.lessons.forEach((lesson: any) => {
+        if (lesson.title) topics.push(`  - ${lesson.title}`);
+      });
+    }
+  });
+
+  return { topics: topics.slice(0, 8) };
 };
 
 const createCourse = async (
   userId: string,
   payload: { title: string; description?: string }
 ): Promise<ICourse> => {
-  const outline = await generateOutline(payload.title);
-  const newCourse = await Course.create({
-    ...payload,
-    user: userId,
-    outline,
-  });
-  return newCourse;
+  try {
+    const aiOutline = await AiService.generateCourseOutline(
+      payload.title,
+      userId
+    );
+
+    const { topics } = flattenOutline(aiOutline);
+
+    const newCourse = await Course.create({
+      ...payload,
+      user: userId,
+      outline: topics,
+    });
+
+    return newCourse;
+  } catch (error: any) {
+    throw new AppError(error.message || "Course creation failed", 500);
+  }
 };
 
 const getMyCourses = async (userId: string): Promise<ICourse[]> => {
