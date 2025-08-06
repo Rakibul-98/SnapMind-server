@@ -16,11 +16,12 @@ const flattenOutline = (aiOutline: any): FlattenedOutline => {
 
   aiOutline.modules.forEach((mod: any) => {
     if (mod.title) topics.push(mod.title);
-    if (Array.isArray(mod.lessons)) {
-      mod.lessons.forEach((lesson: any) => {
-        if (lesson.title) topics.push(`  - ${lesson.title}`);
-      });
-    }
+
+    // if (Array.isArray(mod.lessons)) {
+    //   mod.lessons.forEach((lesson: any) => {
+    //     if (lesson.title) topics.push(`  - ${lesson.title}`);
+    //   });
+    // }
   });
 
   return { topics: topics.slice(0, 8) };
