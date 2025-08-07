@@ -11,6 +11,8 @@ const progressSchema = new Schema(
         score: { type: Number },
       },
     ],
+    totalScore: { type: Number, default: 0 },
+    totalTopics: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

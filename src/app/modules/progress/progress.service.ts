@@ -1,51 +1,50 @@
 import { ProgressModel } from "./progress.model";
 
-const markTopicComplete = async (
-  user: string,
-  course: string,
-  topic: string
-) => {
-  const progress = await ProgressModel.findOneAndUpdate(
-    { user, course },
-    { $addToSet: { completedTopics: topic } },
-    { upsert: true, new: true }
-  );
-  return progress;
-};
-
-const saveQuizScore = async (
-  user: string,
-  course: string,
+const updateProgress = async (
+  userId: string,
+  courseId: string,
   topic: string,
   score: number
 ) => {
-  const progress = await ProgressModel.findOne({ user, course });
+  let progress = await ProgressModel.findOne({
+    user: userId,
+    course: courseId,
+  });
 
   if (!progress) {
-    return await ProgressModel.create({
-      user,
-      course,
-      completedTopics: [],
+    progress = await ProgressModel.create({
+      user: userId,
+      course: courseId,
+      completedTopics: [topic],
       quizScores: [{ topic, score }],
+      totalScore: score,
+      totalTopics: 1,
     });
-  }
+  } else {
+    // Only update if topic not completed yet
+    const alreadyCompleted = progress.completedTopics.includes(topic);
 
-  const alreadyScored = progress.quizScores.find((q) => q.topic === topic);
-  if (!alreadyScored) {
-    progress.quizScores.push({ topic, score });
-    await progress.save();
+    if (!alreadyCompleted) {
+      progress.completedTopics.push(topic);
+      progress.quizScores.push({ topic, score });
+      progress.totalScore += score;
+      progress.totalTopics += 1;
+      await progress.save();
+    }
   }
 
   return progress;
 };
 
-const getProgress = async (user: string, course: string) => {
-  const progress = await ProgressModel.findOne({ user, course });
+const getProgress = async (userId: string, courseId: string) => {
+  const progress = await ProgressModel.findOne({
+    user: userId,
+    course: courseId,
+  });
   return progress;
 };
 
 export const ProgressService = {
-  markTopicComplete,
-  saveQuizScore,
+  updateProgress,
   getProgress,
 };

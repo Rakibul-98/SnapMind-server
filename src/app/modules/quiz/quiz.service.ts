@@ -4,6 +4,7 @@ import { Quiz } from "./quiz.model";
 import { AiService } from "../ai/ai.service";
 import { TopicContent } from "../topicContent/topic.model";
 import { QuizAttemptModel } from "./quizAttempt.model";
+import { ProgressService } from "../progress/progress.service";
 
 const getOrGenerateQuiz = async (
   userId: string,
@@ -72,6 +73,12 @@ const submitQuiz = async (
     score,
     answers: gradedAnswers,
   });
+  await ProgressService.updateProgress(
+    userId,
+    quiz.course.toString(),
+    quiz.topic,
+    score
+  );
   return { message: "Quiz submitted", score };
 };
 

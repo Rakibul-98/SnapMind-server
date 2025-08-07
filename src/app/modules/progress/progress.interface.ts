@@ -6,6 +6,8 @@ export interface IQuizScore {
 export interface IProgress {
   user: string;
   course: string;
+  totalScore: number;
+  totalTopics: number;
   completedTopics: string[];
   quizScores: IQuizScore[];
 }
