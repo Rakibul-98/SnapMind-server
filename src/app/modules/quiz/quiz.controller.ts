@@ -23,4 +23,17 @@ export const QuizController = {
       data: quiz,
     });
   }),
+
+  submitQuiz: catchAsync(async (req: AuthenticatedRequest, res) => {
+    const { quizId, answers } = req.body;
+    const userId = req.user!._id;
+
+    const result = await QuizService.submitQuiz(userId, quizId, answers);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Quiz submitted successfully",
+      data: result,
+    });
+  }),
 };
