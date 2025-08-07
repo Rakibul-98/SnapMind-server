@@ -8,12 +8,19 @@ export const AiService = {
     model = "mistral"
   ): Promise<CourseOutline> => {
     try {
-      const rawJson = await OllamaService.generateCourseOutline(prompt, model);
+      const rawJson = await OllamaService.generateCourseOutline(
+        prompt,
+        "mistral"
+      );
 
-      // Parse and validate AI response JSON to typed CourseOutline
-      const outline: CourseOutline = JSON.parse(rawJson);
+      let outline: CourseOutline;
+      try {
+        outline = JSON.parse(rawJson);
+      } catch (parseErr) {
+        console.error("JSON parse error:", rawJson);
+        throw new Error("Invalid JSON format returned from AI");
+      }
 
-      // Basic validation on structure (could be expanded with zod)
       if (
         !outline.title ||
         !outline.description ||
@@ -45,5 +52,42 @@ export const AiService = {
 
     const data = await response.json();
     return data.response;
+  },
+
+  generateQuizFromContent: async (
+    content: string,
+    model = "mistral"
+  ): Promise<
+    {
+      question: string;
+      options: string[];
+      answer: string;
+    }[]
+  > => {
+    try {
+      const rawJson = await OllamaService.generateQuizFromContent(
+        content,
+        model
+      );
+
+      let quiz;
+      try {
+        quiz = JSON.parse(rawJson);
+      } catch (parseErr) {
+        console.error("Quiz JSON parse error:", rawJson);
+        throw new Error("Invalid JSON format returned from AI for quiz");
+      }
+
+      if (!Array.isArray(quiz)) {
+        throw new Error("Invalid quiz structure from AI");
+      }
+
+      // Optionally validate the quiz items here
+
+      return quiz;
+    } catch (error) {
+      console.error("AI quiz generation error:", error);
+      throw new Error("Failed to generate quiz");
+    }
   },
 };

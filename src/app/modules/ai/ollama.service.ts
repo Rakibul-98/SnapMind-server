@@ -9,7 +9,6 @@ export const OllamaService = {
     model: string = "mistral"
   ): Promise<string> => {
     try {
-      // Compose prompt with clearer instruction for structured JSON output
       const fullPrompt = OllamaService.buildCoursePrompt(prompt);
 
       const response = await axios.post(OLLAMA_API_URL, {
@@ -18,13 +17,16 @@ export const OllamaService = {
         stream: false,
         options: {
           temperature: 0.7,
-          num_predict: 1200,
+          num_predict: 1500,
         },
       });
 
-      const rawResponse = response.data.response;
+      const rawResponse = response.data?.response?.trim();
 
-      // Parse JSON structure from AI output
+      if (!rawResponse) {
+        throw new Error("Empty response from Ollama AI");
+      }
+
       const outlineJson = OllamaService.extractJson(rawResponse);
 
       return outlineJson;
@@ -41,7 +43,6 @@ Generate a comprehensive **course outline** about "${topic}" in **JSON format** 
 {
   "title": "Creative course title",
   "description": "3-5 sentence course overview",
-  "learningObjectives": ["Objective 1", "Objective 2", "..."],
   "modules": [
     {
       "title": "Module 1 title",
@@ -49,26 +50,74 @@ Generate a comprehensive **course outline** about "${topic}" in **JSON format** 
         {
           "title": "Lesson 1.1 title",
           "keyConcepts": ["Concept A", "Concept B"],
-          "activities": ["Activity 1", "Activity 2"]
         }
       ]
     }
   ],
-  "assessmentMethods": ["Method 1", "Method 2"],
-  "recommendedResources": [
-    {"name": "Resource 1", "url": "https://..."},
-    {"name": "Resource 2", "url": "https://..."}
-  ]
 }
-
 Ensure JSON is properly formatted without extraneous text or markdown.
 `;
   },
 
   extractJson: (response: string): string => {
-    // Attempt to extract JSON object from AI response reliably
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("No JSON found in AI response");
-    return jsonMatch[0];
+    try {
+      const match = response.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+      if (!match) throw new Error("No JSON found in AI response");
+      return match[0];
+    } catch (error) {
+      console.error("JSON extraction failed:", response);
+      throw new Error("Failed to extract JSON from AI response");
+    }
+  },
+
+  generateQuizFromContent: async (
+    content: string,
+    model: string = "mistral"
+  ): Promise<string> => {
+    try {
+      const fullPrompt = OllamaService.buildQuizPrompt(content);
+
+      const response = await axios.post(OLLAMA_API_URL, {
+        model,
+        prompt: fullPrompt,
+        stream: false,
+        options: {
+          temperature: 0.7,
+          num_predict: 1000,
+        },
+      });
+
+      const rawResponse = response.data?.response?.trim();
+
+      if (!rawResponse) {
+        throw new Error("Empty response from Ollama AI");
+      }
+
+      const quizJson = OllamaService.extractJson(rawResponse);
+
+      return quizJson;
+    } catch (error) {
+      console.error("Ollama quiz generation error:", error);
+      throw new Error("Failed to generate quiz content with Ollama");
+    }
+  },
+
+  buildQuizPrompt: (content: string): string => {
+    return `
+Based on the content below, generate a **JSON array** of exactly 5 quiz questions. Each question should follow this schema:
+
+{
+  "question": "Question text",
+  "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+  "answer": "Correct Option"
+}
+
+Respond ONLY with valid JSON. Do NOT include any markdown, explanation, or text.
+
+Content:
+"""
+${content}
+"""
+`;
   },
 };

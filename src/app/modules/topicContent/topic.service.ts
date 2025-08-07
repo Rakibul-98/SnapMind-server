@@ -1,3 +1,5 @@
+// topic.service
+
 import { AiService } from "../ai/ai.service";
 import { TopicContent } from "./topic.model";
 
