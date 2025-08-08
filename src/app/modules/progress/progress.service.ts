@@ -1,4 +1,11 @@
+// progress.service
+
+import { PointsService } from "../gamification/gamification.service";
 import { ProgressModel } from "./progress.model";
+
+const QUIZ_POINTS = 10;
+const COURSE_POINTS = 50;
+const STREAK_POINTS = 5;
 
 const updateProgress = async (
   userId: string,
@@ -20,8 +27,13 @@ const updateProgress = async (
       totalScore: score,
       totalTopics: 1,
     });
+    await PointsService.addPoints(
+      userId,
+      QUIZ_POINTS,
+      "quiz",
+      `Completed quiz for topic "${topic}"`
+    );
   } else {
-    // Only update if topic not completed yet
     const alreadyCompleted = progress.completedTopics.includes(topic);
 
     if (!alreadyCompleted) {
@@ -30,6 +42,22 @@ const updateProgress = async (
       progress.totalScore += score;
       progress.totalTopics += 1;
       await progress.save();
+
+      await PointsService.addPoints(
+        userId,
+        QUIZ_POINTS,
+        "quiz",
+        `Completed quiz for topic "${topic}"`
+      );
+      const COURSE_TOTAL_TOPICS = 5; // change based on actual course size
+      if (progress.totalTopics >= COURSE_TOTAL_TOPICS) {
+        await PointsService.addPoints(
+          userId,
+          COURSE_POINTS,
+          "course",
+          `Completed course "${courseId}"`
+        );
+      }
     }
   }
 
@@ -44,7 +72,17 @@ const getProgress = async (userId: string, courseId: string) => {
   return progress;
 };
 
+const awardStreakPoints = async (userId: string) => {
+  await PointsService.addPoints(
+    userId,
+    STREAK_POINTS,
+    "streak",
+    `Daily login streak reward`
+  );
+};
+
 export const ProgressService = {
   updateProgress,
   getProgress,
+  awardStreakPoints,
 };

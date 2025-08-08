@@ -5,6 +5,7 @@ import { AiService } from "../ai/ai.service";
 import { TopicContent } from "../topicContent/topic.model";
 import { QuizAttemptModel } from "./quizAttempt.model";
 import { ProgressService } from "../progress/progress.service";
+import { PointsService } from "../gamification/gamification.service";
 
 const getOrGenerateQuiz = async (
   userId: string,
@@ -56,7 +57,7 @@ const submitQuiz = async (
   if (!quiz) throw new Error("Quiz not found");
 
   let score = 0;
-  const gradedAnswers = quiz.questions.map((q: any, idx: number) => {
+  const gradedAnswers = quiz.questions.map((q: any) => {
     const submitted = answers.find((a) => a.question === q.question);
     const isCorrect = submitted && submitted.selected === q.answer;
     if (isCorrect) score++;
@@ -79,6 +80,7 @@ const submitQuiz = async (
     quiz.topic,
     score
   );
+  await PointsService.addPoints(userId, score, "quiz", "quiz_completed");
   return { message: "Quiz submitted", score };
 };
 
