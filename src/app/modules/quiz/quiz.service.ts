@@ -5,7 +5,7 @@ import { AiService } from "../ai/ai.service";
 import { TopicContent } from "../topicContent/topic.model";
 import { QuizAttemptModel } from "./quizAttempt.model";
 import { ProgressService } from "../progress/progress.service";
-import { PointsService } from "../gamification/gamification.service";
+import { BadgeService } from "../badge/badge.service";
 
 const getOrGenerateQuiz = async (
   userId: string,
@@ -43,7 +43,7 @@ const getOrGenerateQuiz = async (
 const submitQuiz = async (
   userId: string,
   quizId: string,
-  answers: { question: string; selected: string }[]
+  answers: { questionId: string; selectedOption: string }[]
 ) => {
   const existing = await QuizAttemptModel.findOne({
     user: userId,
@@ -58,13 +58,22 @@ const submitQuiz = async (
 
   let score = 0;
   const gradedAnswers = quiz.questions.map((q: any) => {
-    const submitted = answers.find((a) => a.question === q.question);
-    const isCorrect = submitted && submitted.selected === q.answer;
+    const submitted = answers.find(
+      (a) => a.questionId.toString() === q._id.toString()
+    );
+
+    const submittedAnswer = submitted?.selectedOption?.trim() || "";
+    const correctAnswer = q.answer?.trim() || "";
+
+    const isCorrect = submittedAnswer && submittedAnswer === correctAnswer;
+
     if (isCorrect) score++;
     return {
+      questionId: q._id,
       question: q.question,
-      selected: submitted?.selected || "",
-      correct: q.answer,
+      selected: submittedAnswer,
+      correct: correctAnswer,
+      isCorrect,
     };
   });
 
@@ -78,9 +87,18 @@ const submitQuiz = async (
     userId,
     quiz.course.toString(),
     quiz.topic,
-    score
+    score,
+    quiz.questions.length
   );
-  await PointsService.addPoints(userId, score, "quiz", "quiz_completed");
+  await BadgeService.checkAndAward(userId, "quiz_completed", {
+    topic: quiz.topic,
+  });
+  if (score === quiz?.questions?.length) {
+    await BadgeService.checkAndAward(userId, "perfect_score", {
+      topic: quiz.topic,
+    });
+  }
+
   return { message: "Quiz submitted", score };
 };
 

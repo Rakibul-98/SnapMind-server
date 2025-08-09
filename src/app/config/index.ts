@@ -13,5 +13,9 @@ export const config = {
     refreshSecret: process.env.JWT_REFRESH_SECRET as string,
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN as string,
   },
-  huggingFaceToken: process.env.HUGGINGFACE_API_TOKEN,
+
+  quizPoint: Number(process.env.QUIZ_POINT) || 5,
+  topicPoint: Number(process.env.TOPIC_POINT) || 10,
+  perfectScoreBonus: Number(process.env.PERFECT_SCORE_BONUS) || 20,
+  baseStreakPoint: Number(process.env.BASE_STREAK_POINT) || 5,
 };

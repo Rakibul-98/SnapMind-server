@@ -48,8 +48,25 @@ const getCourseById = catchAsync(
   }
 );
 
+const completeCourse = catchAsync(
+  async (req: AuthenticatedRequest, res: Response) => {
+    const { id } = req.params;
+    const userId = req.user!._id;
+
+    const result = await courseServices.completeCourse(id, userId);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Course marked as completed",
+      data: result,
+    });
+  }
+);
+
 export const courseControllers = {
   createCourse,
   getMyCourses,
   getCourseById,
+  completeCourse,
 };

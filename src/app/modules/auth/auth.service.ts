@@ -23,12 +23,23 @@ const registerUser = async (data: { email: string; password: string }) => {
   if (existingUser) throw new AppError("User already exists", 409);
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = await User.create({ ...data, password: hashedPassword });
+  const newUser = await User.create({
+    ...data,
+    password: hashedPassword,
+    points: 0,
+    badges: [],
+    streak: { count: 0, lastActive: null },
+    activeCourses: 0,
+  });
   return { id: newUser._id, email: newUser.email };
 };
 
-const loginUser = async (payload: IAuthUser): Promise<IAuthResponse> => {
-  const user = await User.findOne({ email: payload.email }).select("+password");
+const loginUser = async (
+  payload: IAuthUser
+): Promise<IAuthResponse & { user: any }> => {
+  const user = await User.findOne({ email: payload.email })
+    .select("+password")
+    .lean();
   if (!user) throw new AppError("Invalid credentials", 401);
 
   const isPasswordValid = await bcrypt.compare(payload.password, user.password);
@@ -46,7 +57,9 @@ const loginUser = async (payload: IAuthUser): Promise<IAuthResponse> => {
     config.jwt.refreshExpiresIn
   );
 
-  return { accessToken, refreshToken };
+  delete (user as any).password;
+
+  return { accessToken, refreshToken, user };
 };
 
 const refreshToken = async (token: string): Promise<string> => {

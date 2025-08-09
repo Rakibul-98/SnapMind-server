@@ -1,3 +1,4 @@
+import { AuthenticatedRequest } from "../../middlewares/auth";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { userServices } from "./user.service";
@@ -5,6 +6,19 @@ import { userServices } from "./user.service";
 const getProfile = catchAsync(async (req, res) => {
   const { email } = req.params;
   const result = await userServices.getUserProfileByEmail(email);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "User profile fetched successfully",
+    data: result,
+  });
+});
+
+const getSelfProfile = catchAsync(async (req: AuthenticatedRequest, res) => {
+  const userId = req.user!._id;
+
+  const result = await userServices.getUserProfileById(userId);
 
   sendResponse(res, {
     statusCode: 200,
@@ -41,4 +55,5 @@ export const userControllers = {
   getAllUsers,
   updateProfile,
   getProfile,
+  getSelfProfile,
 };

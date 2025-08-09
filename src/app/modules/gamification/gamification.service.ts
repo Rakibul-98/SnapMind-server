@@ -5,7 +5,7 @@ import { PointsModel } from "./gamification.model";
 const addPoints = async (
   userId: string,
   points: number,
-  type: "quiz" | "course" | "streak",
+  type: "quiz" | "course" | "streak" | "bonus",
   description: string
 ) => {
   let record = await PointsModel.findOne({ user: userId });
@@ -43,7 +43,12 @@ const getLeaderboard = async () => {
     .populate("user", "name email");
 };
 
+const getPointsByUser = async (userId: string) => {
+  return PointsModel.findOne({ user: userId }).lean();
+};
+
 export const PointsService = {
   addPoints,
   getLeaderboard,
+  getPointsByUser,
 };

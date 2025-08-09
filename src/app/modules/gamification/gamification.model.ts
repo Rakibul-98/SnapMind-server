@@ -13,7 +13,7 @@ const PointsSchema = new Schema({
     {
       type: {
         type: String,
-        enum: ["quiz", "course", "streak"],
+        enum: ["quiz", "course", "streak", "bonus"],
         required: true,
       },
       points: { type: Number, required: true },

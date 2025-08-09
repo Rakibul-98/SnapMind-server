@@ -1,6 +1,7 @@
 // topic.service
 
 import { AiService } from "../ai/ai.service";
+import { Course } from "../course/course.model";
 import { TopicContent } from "./topic.model";
 
 const getOrGenerateTopicContent = async (
@@ -8,13 +9,18 @@ const getOrGenerateTopicContent = async (
   courseId: string,
   topicTitle: string
 ): Promise<string> => {
+  const course = await Course.findById(courseId);
+  if (!course) throw new Error("Course not found");
+
   const existing = await TopicContent.findOne({
     user: userId,
     course: courseId,
     topic: topicTitle,
   });
 
-  if (existing) return existing.content;
+  if (existing || course.isCompleted) {
+    return existing ? existing.content : "";
+  }
 
   const prompt = `Explain the topic "${topicTitle}" in detail. Provide relevant real-world applications and examples. Pull insights from popular sources or documentation.`;
 

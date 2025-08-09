@@ -14,12 +14,14 @@ const register = catchAsync(async (req: Request, res: Response) => {
 });
 
 const login = catchAsync(async (req: Request, res: Response) => {
-  const result = await authServices.loginUser(req.body);
+  const { accessToken, refreshToken, user } = await authServices.loginUser(
+    req.body
+  );
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: "Login successful",
-    data: result,
+    data: { accessToken, refreshToken, user },
   });
 });
 

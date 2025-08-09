@@ -7,14 +7,10 @@ import { AuthenticatedRequest } from "../../middlewares/auth";
 
 export const generateCourseOutline = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    const { prompt, model } = req.body;
+    const { prompt } = req.body;
     const userId = req.user!._id;
 
-    const outline = await AiService.generateCourseOutline(
-      prompt,
-      userId,
-      model
-    );
+    const outline = await AiService.generateCourseOutline(prompt, userId);
 
     sendResponse(res, {
       statusCode: 201,

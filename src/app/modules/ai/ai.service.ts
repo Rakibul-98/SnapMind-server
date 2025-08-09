@@ -82,8 +82,6 @@ export const AiService = {
         throw new Error("Invalid quiz structure from AI");
       }
 
-      // Optionally validate the quiz items here
-
       return quiz;
     } catch (error) {
       console.error("AI quiz generation error:", error);

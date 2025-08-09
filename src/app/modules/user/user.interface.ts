@@ -5,7 +5,6 @@ export interface IUser {
   email: string;
   password: string;
   role: UserRole;
-  points?: number;
   isActive?: boolean;
   createdAt?: Date;
   updatedAt?: Date;

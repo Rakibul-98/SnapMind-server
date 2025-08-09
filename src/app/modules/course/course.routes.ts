@@ -17,4 +17,10 @@ router.get("/", auth(["student"]), courseControllers.getMyCourses);
 
 router.get("/:id", auth(["student"]), courseControllers.getCourseById);
 
+router.patch(
+  "/:id/complete",
+  auth(["student"]),
+  courseControllers.completeCourse
+);
+
 export const courseRoutes = router;
