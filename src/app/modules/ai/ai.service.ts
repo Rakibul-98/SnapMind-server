@@ -1,17 +1,11 @@
 // ai.service.ts
-import { OllamaService } from "./ollama.service";
 import { CourseOutline } from "./ai.interface";
+import { GroqService } from "./groq.service";
 
 export const AiService = {
-  generateCourseOutline: async (
-    prompt: string,
-    model = "mistral"
-  ): Promise<CourseOutline> => {
+  generateCourseOutline: async (prompt: string): Promise<CourseOutline> => {
     try {
-      const rawJson = await OllamaService.generateCourseOutline(
-        prompt,
-        "mistral"
-      );
+      const rawJson = await GroqService.generateCourseOutline(prompt);
 
       let outline: CourseOutline;
       try {
@@ -36,27 +30,18 @@ export const AiService = {
     }
   },
 
-  generateTopicContent: async (
-    prompt: string,
-    model = "mistral"
-  ): Promise<string> => {
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model,
-        prompt,
-        stream: false,
-      }),
-    });
-
-    const data = await response.json();
-    return data.response;
+  generateTopicContent: async (prompt: string): Promise<string> => {
+    try {
+      const response = await GroqService.generateTopicContent(prompt);
+      return response;
+    } catch (error) {
+      console.error("AI topic content generation error:", error);
+      throw new Error("Failed to generate topic content");
+    }
   },
 
   generateQuizFromContent: async (
-    content: string,
-    model = "mistral"
+    content: string
   ): Promise<
     {
       question: string;
@@ -65,10 +50,7 @@ export const AiService = {
     }[]
   > => {
     try {
-      const rawJson = await OllamaService.generateQuizFromContent(
-        content,
-        model
-      );
+      const rawJson = await GroqService.generateQuizFromContent(content);
 
       let quiz;
       try {

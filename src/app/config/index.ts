@@ -18,4 +18,7 @@ export const config = {
   topicPoint: Number(process.env.TOPIC_POINT) || 10,
   perfectScoreBonus: Number(process.env.PERFECT_SCORE_BONUS) || 20,
   baseStreakPoint: Number(process.env.BASE_STREAK_POINT) || 5,
+
+  groqAiModel: process.env.GROQ_AI_MODEL as string,
+  groqAPIKEY: process.env.GROQ_API_KEY as string,
 };
